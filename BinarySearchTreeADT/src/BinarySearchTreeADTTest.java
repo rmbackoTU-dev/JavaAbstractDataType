@@ -27,19 +27,11 @@ public class BinarySearchTreeADTTest {
     BinarySearchTreeADT.BinaryNode<String> nodeStrTwo;
     BinarySearchTreeADT.BinaryNode<String> nodeStrThree;
 
-    BinarySearchTreeADT.BinaryNode<Integer> manTreeRoot=new BinarySearchTreeADT.BinaryNode(25);
-    BinarySearchTreeADT.BinaryNode<Integer> manTreeLeftOne=new BinarySearchTreeADT.BinaryNode(4);
-    BinarySearchTreeADT.BinaryNode<Integer> manTreeLeftTwo=new BinarySearchTreeADT.BinaryNode(5);
-    BinarySearchTreeADT.BinaryNode<Integer> manTreeLeftThree=new BinarySearchTreeADT.BinaryNode(8);
-    BinarySearchTreeADT.BinaryNode<Integer> manTreeLeftFour=new BinarySearchTreeADT.BinaryNode(10);
-    BinarySearchTreeADT.BinaryNode<Integer> manTreeLeftFive=new BinarySearchTreeADT.BinaryNode(12);
-    BinarySearchTreeADT.BinaryNode<Integer> manTreeLeftSix=new BinarySearchTreeADT.BinaryNode(24);
-    BinarySearchTreeADT.BinaryNode<Integer> manTreeRightOne=new BinarySearchTreeADT.BinaryNode(28);
-    BinarySearchTreeADT.BinaryNode<Integer> manTreeRightTwo=new BinarySearchTreeADT.BinaryNode(31);
-    BinarySearchTreeADT.BinaryNode<Integer> manTreeRightThree=new BinarySearchTreeADT.BinaryNode(35);
-    BinarySearchTreeADT.BinaryNode<Integer> manTreeRightFour=new BinarySearchTreeADT.BinaryNode(40);
+    public static BinarySearchTreeADT.BinaryNode<Integer> manTreeRoot=new BinarySearchTreeADT.BinaryNode(25);
+    public static BinarySearchTreeADT.BinaryNode<Integer> manTreeLeftFour=new BinarySearchTreeADT.BinaryNode(10);
+    public static BinarySearchTreeADT.BinaryNode<Integer> manTreeRightTwo=new BinarySearchTreeADT.BinaryNode(31);
 
-    BinarySearchTreeADT.Iterator testIter;
+    public BinarySearchTreeADT.Iterator testIter=new BinarySearchTreeADT.Iterator(manTreeRoot);
 
     @org.junit.Before
     public void setUp() throws Exception
@@ -55,17 +47,8 @@ public class BinarySearchTreeADTTest {
         nodeStrTwo=new  BinarySearchTreeADT.BinaryNode(nodeStrOne, nodeStrThree,
                 strDatTwo);
 
-        //Mock tree manual inserts and deletes with no check conditions
         manTreeRoot.setLeft(manTreeLeftFour);
-        manTreeLeftFour.setLeft(manTreeLeftTwo);
-        manTreeLeftFour.setRight(manTreeLeftFive);
-        manTreeLeftTwo.setLeft(manTreeLeftOne);
-        manTreeLeftTwo.setRight(manTreeLeftThree);
-        manTreeLeftFive.setRight(manTreeLeftSix);
-        manTreeRoot.setRight(manTreeRightTwo);
-        manTreeRightTwo.setLeft(manTreeRightOne);
-        manTreeRightTwo.setRight(manTreeRightThree);
-        manTreeRightThree.setRight(manTreeRightFour);
+        manTreeRightTwo.setRight(manTreeRightTwo);
     }
 
     @org.junit.After
@@ -74,6 +57,8 @@ public class BinarySearchTreeADTTest {
         nodeStrThree.setRight(null);
         nodeIntOne.setLeft(null);
         nodeIntThree.setRight(null);
+        manTreeRightTwo.setLeft(null);
+        manTreeLeftFour.setRight(null);
     }
 
     @Test
@@ -188,59 +173,54 @@ public class BinarySearchTreeADTTest {
     @Test
     public void testHasNextTrue()
     {
-        testIter=new BinarySearchTreeADT.Iterator(manTreeRoot);
         assertTrue("iterator failed to detect next", testIter.hasNext() );
     }
 
     @Test
     public void testHasNextFalse()
     {
-        testIter=new BinarySearchTreeADT.Iterator(manTreeLeftOne);
         assertFalse("iterator has failed to detect that there is no children", testIter.hasNext());
     }
 
     @Test
     public void testHasNextLeft()
     {
-        testIter=new BinarySearchTreeADT.Iterator(manTreeRoot);
         assertTrue("iterator failed to detect next", testIter.hasLeft() );
     }
 
     @Test
     public void testHastNextRight()
     {
-        testIter=new BinarySearchTreeADT.Iterator(manTreeRoot);
         assertTrue("iterator failed to detect next", testIter.hasRight() );
     }
 
     @Test
     public void testHasNextLeftFalse()
     {
-        testIter=new BinarySearchTreeADT.Iterator(manTreeLeftOne);
         assertFalse("iterator failed to detect next", testIter.hasLeft() );
     }
 
     @Test
     public void testHastNextRightFalse()
     {
-        testIter=new BinarySearchTreeADT.Iterator(manTreeLeftOne);
         assertFalse("iterator failed to detect next", testIter.hasRight() );
     }
 
     @Test
     public void testNextLeft()
     {
-        testIter=new BinarySearchTreeADT.Iterator(manTreeRoot);
+        BinarySearchTreeADT.BinaryNode resultNode;
         testIter.nextLeft();
-        BinarySearchTreeADT.BinaryNode<Integer> resultNode=testIter.nodePointer;
+        resultNode=testIter.nodePointer;
         assertEquals("Iterator did not properly move to left node", resultNode.compareTo(manTreeLeftFour), 0);
     }
 
+    @Test
     public void testNextRight()
     {
-        testIter=new BinarySearchTreeADT.Iterator(manTreeRoot);
+        BinarySearchTreeADT.BinaryNode resultNode;
         testIter.nextRight();
-        BinarySearchTreeADT.BinaryNode<Integer> resultNode=testIter.nodePointer;
+        resultNode=testIter.nodePointer;
         assertEquals("Iterator did not properly move to right node", resultNode.compareTo(manTreeRightTwo), 0);
     }
 
