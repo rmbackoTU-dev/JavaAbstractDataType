@@ -1,11 +1,17 @@
 
 
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import java.util.*;
 import static org.junit.Assert.*;
 
 public class BinarySearchTreeADTTest {
+
+    @Rule
+     public ExpectedException thrown=ExpectedException.none();
 
     BinarySearchTreeADT<Integer> intBST;
 
@@ -38,7 +44,7 @@ public class BinarySearchTreeADTTest {
     public static BinarySearchTreeADT.BinaryNode<Integer> manTreeRightThree=new BinarySearchTreeADT.BinaryNode<>(34);
     public static BinarySearchTreeADT.BinaryNode<Integer> manTreeRightFour=new BinarySearchTreeADT.BinaryNode<>(41);
 
-    public BinarySearchTreeADT.Iterator testIter=new BinarySearchTreeADT.Iterator(manTreeRoot);
+    public BinarySearchTreeADT.Iterator testIter;
 
     @org.junit.Before
     public void setUp() throws Exception
@@ -66,6 +72,7 @@ public class BinarySearchTreeADTTest {
         manTreeRightTwo.setLeft(null);
         manTreeLeftFour.setRight(null);
         intBST=null;
+        nodeTestTearDown();
     }
 
     @Test
@@ -180,36 +187,45 @@ public class BinarySearchTreeADTTest {
     @Test
     public void testHasNextTrue()
     {
+        nodeTestSetup();
         assertTrue("iterator failed to detect next", testIter.hasNext() );
     }
 
     @Test
     public void testHasNextFalse()
     {
+        nodeTestSetup();
+        testIter.nextLeft();
         assertFalse("iterator has failed to detect that there is no children", testIter.hasNext());
     }
 
     @Test
     public void testHasNextLeft()
     {
+        nodeTestSetup();
         assertTrue("iterator failed to detect next", testIter.hasLeft() );
     }
 
     @Test
     public void testHastNextRight()
     {
+        nodeTestSetup();
         assertTrue("iterator failed to detect next", testIter.hasRight() );
     }
 
     @Test
     public void testHasNextLeftFalse()
     {
+        nodeTestSetup();
+        testIter.nextLeft();
         assertFalse("iterator failed to detect next", testIter.hasLeft() );
     }
 
     @Test
     public void testHastNextRightFalse()
     {
+        nodeTestSetup();
+        testIter.nextRight();
         assertFalse("iterator failed to detect next", testIter.hasRight() );
     }
 
@@ -235,7 +251,7 @@ public class BinarySearchTreeADTTest {
 
     @Test
     public void testInsertLeft(){
-        nodeTestSetup();
+        intBST=new BinarySearchTreeADT(manTreeRoot);
         BinarySearchTreeADT.BinaryNode<Integer> expected=intBST.insert(manTreeLeftFour.data, intBST.rootNode);
         BinarySearchTreeADT.BinaryNode<Integer> expectedLeft=expected.getLeftChild();
         System.out.printf("Data: %s\n", expectedLeft.nodeData());
@@ -245,7 +261,7 @@ public class BinarySearchTreeADTTest {
 
     @Test
     public void testInsertRight(){
-        nodeTestSetup();
+        intBST=new BinarySearchTreeADT(manTreeRoot);
         BinarySearchTreeADT.BinaryNode<Integer> expected=intBST.insert(manTreeRightTwo.data, intBST.rootNode);
         BinarySearchTreeADT.BinaryNode<Integer> expectedRight=expected.getRightChild();
         System.out.printf("Data: %s\n", expectedRight.nodeData());
@@ -253,13 +269,6 @@ public class BinarySearchTreeADTTest {
         assertEquals("Right node not correctly inserted", compareVal, 0);
     }
 
-    @Test
-    public void testSetElement(){
-        //compare left value
-        //compare right value
-        //if they are the same as the right and left of a given element it worked
-
-    }
 
     @Test
     public void testInoder(){
@@ -272,7 +281,7 @@ public class BinarySearchTreeADTTest {
     @Test
     public void testPreOrder(){
         BinarySearchTreeADT<Integer> testTree=testTreeSetup();
-        String excepted="25 10 7 5 3 12 31 28 34 41 ";
+        String excepted="25 10 5 3 7 12 31 28 34 41 ";
         String recieved=testTree.preOrder(testTree.rootNode);
         assertEquals(excepted, recieved);
     }
@@ -280,7 +289,7 @@ public class BinarySearchTreeADTTest {
     @Test
     public void testPostOrder() {
         BinarySearchTreeADT<Integer> testTree = testTreeSetup();
-        String expected="3 5 7 12 10 28 41 34 31 25 ";
+        String expected="3 7 5 12 10 28 41 34 31 25 ";
         String recieved=testTree.postOrder(testTree.rootNode);
         assertEquals(recieved, expected);
     }
@@ -304,41 +313,94 @@ public class BinarySearchTreeADTTest {
     }
 
     @Test
+    public void testFind(){
+        BinarySearchTreeADT testTree=testTreeSetup();
+        BinarySearchTreeADT.BinaryNode foundNode=testTree.find(12);
+        int compareVal=foundNode.compareTo(manTreeLeftFive);
+        assertEquals("Did not successfully find node",0,compareVal);
+    }
+
+    @Test
+    public void testFindThrows(){
+        BinarySearchTreeADT testTree=testTreeSetup();
+        thrown.expect(NoSuchElementException.class);
+        BinarySearchTreeADT.BinaryNode foundNode=testTree.find(13);
+    }
+
+    @Test
     public void testRemoveSkewLeft()
     {
         BinarySearchTreeADT<Integer> testTree=testTreeSetup();
+        BinarySearchTreeADT.BinaryNode<Integer> testRootNode=testTree.rootNode;
+        BinarySearchTreeADT.BinaryNode newTreeRoot=testTree.removeSkewLeft(3, testRootNode);
+        testTree=new BinarySearchTreeADT(newTreeRoot);
+        thrown.expect(NoSuchElementException.class);
+        BinarySearchTreeADT.BinaryNode removedNode=testTree.find(3);
     }
+
 
     @Test
     public void testRemoveSkewLeftSingleChild()
     {
         BinarySearchTreeADT<Integer> testTree=testTreeSetup();
+        BinarySearchTreeADT.BinaryNode<Integer> testRootNode=testTree.rootNode;
+        BinarySearchTreeADT.BinaryNode<Integer> newTreeRoot=testTree.removeSkewLeft(34,testRootNode);
+        testTree=new BinarySearchTreeADT(newTreeRoot);
+        thrown.expect(NoSuchElementException.class);
+        BinarySearchTreeADT.BinaryNode removedNode=testTree.find(34);
+
     }
 
     @Test
     public void testRemoveSkewLeftFullNode()
     {
         BinarySearchTreeADT<Integer> testTree=testTreeSetup();
+        BinarySearchTreeADT.BinaryNode<Integer> testRootNode=testTree.rootNode;
+        BinarySearchTreeADT.BinaryNode<Integer> newTreeRoot=testTree.removeSkewLeft(5, testRootNode);
+        testTree=new BinarySearchTreeADT(newTreeRoot);
+        BinarySearchTreeADT.BinaryNode<Integer> removeNodeParent=testTree.find(10);
+        BinarySearchTreeADT.BinaryNode<Integer> parentLeft=removeNodeParent.getLeftChild();
+        int compareLeft=parentLeft.compareTo(manTreeLeftThree);
+        assertEquals("Did not successfully inherit children after deletion", compareLeft,  0);
     }
 
     @Test
     public void testRemoveSkewRight()
     {
         BinarySearchTreeADT<Integer> testTree=testTreeSetup();
+        BinarySearchTreeADT.BinaryNode<Integer> testRootNode=testTree.rootNode;
+        BinarySearchTreeADT.BinaryNode newTreeRoot=testTree.removeSkewRight(3, testRootNode);
+        testTree=new BinarySearchTreeADT(newTreeRoot);
+        thrown.expect(NoSuchElementException.class);
+        BinarySearchTreeADT.BinaryNode removedNode=testTree.find(3);
     }
 
     @Test
     public void testRemoveSkewRightSingleChild()
     {
         BinarySearchTreeADT<Integer> testTree=testTreeSetup();
+        BinarySearchTreeADT.BinaryNode<Integer> testRootNode=testTree.rootNode;
+        BinarySearchTreeADT.BinaryNode<Integer> newTreeRoot=testTree.removeSkewRight(34, testRootNode);
+        testTree=new BinarySearchTreeADT(newTreeRoot);
+        thrown.expect(NoSuchElementException.class);
+        BinarySearchTreeADT.BinaryNode removedNode=testTree.find(34);
     }
 
     @Test
     public void testRemoveSkewRightFullNode()
     {
-         BinarySearchTreeADT<Integer> testTree=testTreeSetup();
+        BinarySearchTreeADT<Integer> testTree=testTreeSetup();
+        BinarySearchTreeADT.BinaryNode<Integer> testRootNode=testTree.rootNode;
+        BinarySearchTreeADT.BinaryNode<Integer> newTreeRoot=testTree.removeSkewRight(5, testRootNode);
+        testTree=new BinarySearchTreeADT(newTreeRoot);
+        BinarySearchTreeADT.BinaryNode<Integer> removeNodeParent=testTree.find(10);
+        BinarySearchTreeADT.BinaryNode<Integer> parentLeft=removeNodeParent.getLeftChild();
+        System.out.println("Child "+parentLeft.nodeData());
+        int compareLeft=parentLeft.compareTo(manTreeLeftOne);
+        assertEquals("Did not successfully inherit children after deletion", compareLeft,  0);
     }
 
+    //helpers
     public  BinarySearchTreeADT<Integer> testTreeSetup()
     {
         BinarySearchTreeADT<Integer> testTree=new BinarySearchTreeADT(manTreeRoot);
@@ -346,8 +408,8 @@ public class BinarySearchTreeADTTest {
         newRoot=testTree.insert(manTreeLeftFour.data, intBST.rootNode);
         newRoot=testTree.insert(manTreeRightTwo.data, intBST.rootNode);
         newRoot=testTree.insert(manTreeLeftFive.data, intBST.rootNode);
-        newRoot=testTree.insert(manTreeLeftThree.data,intBST.rootNode);
         newRoot=testTree.insert(manTreeLeftTwo.data,intBST.rootNode);
+        newRoot=testTree.insert(manTreeLeftThree.data, intBST.rootNode);
         newRoot=testTree.insert(manTreeLeftOne.data,intBST.rootNode);
         newRoot=testTree.insert(manTreeRightOne.data,intBST.rootNode);
         newRoot=testTree.insert(manTreeRightThree.data,intBST.rootNode);
@@ -356,10 +418,22 @@ public class BinarySearchTreeADTTest {
         return testTree;
     }
 
+
     public void nodeTestSetup()
     {
         manTreeRoot.setLeft(manTreeLeftFour);
         manTreeRoot.setRight(manTreeRightTwo);
         intBST=new BinarySearchTreeADT(manTreeRoot);
+        testIter=new BinarySearchTreeADT.Iterator(manTreeRoot);
     }
+
+    public void nodeTestTearDown()
+    {
+        manTreeRoot.setLeft(null);
+        manTreeRoot.setRight(null);
+        intBST=null;
+        testIter=null;
+    }
+
+
 }

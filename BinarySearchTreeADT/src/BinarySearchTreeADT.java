@@ -1,3 +1,4 @@
+import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.util.*;
 
 public  class BinarySearchTreeADT<T extends Comparable<T>>
@@ -72,11 +73,6 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
             this.right=rt;
         }
 
-        public void set(BinaryNode t){
-            t.setRight(this.right);
-            t.setLeft(this.left);
-        }
-
         public int compareTo(BinaryNode<T> other )
         {
             return this.data.compareTo(other.data);
@@ -133,7 +129,7 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
             treeIter.nextLeft();
         }
         minimumNode=treeIter.nodePointer;
-        System.out.println("Leaving find min with" + minimumNode.data.toString());
+        System.out.println("Leaving find min with " + minimumNode.data.toString());
         return minimumNode;
     }
 
@@ -257,61 +253,58 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
         return insertNode;
     }
 
-    public BinaryNode<T> find(T data){
-        boolean inTree=true;
+    public BinaryNode<T> find (T data) throws NoSuchElementException{
+        boolean found=false;
         BinaryNode<T> compareNode=new BinaryNode(data);
         Iterator nodeIter=new Iterator(this.rootNode);
-        int compareVal=nodeIter.nodePointer.compareTo(compareNode);
-        try {
-            while (compareVal != 0 && inTree) {
-                if (compareVal < 0) {
-                    if (nodeIter.hasLeft()) {
-                        nodeIter.nextLeft();
-                        compareVal = nodeIter.nodePointer.compareTo(compareNode);
-                    } else {
-                        //value not in tree
-                        inTree = false;
-                    }
-                } else if (compareVal > 0) {
-                    if (nodeIter.hasRight()) {
-                        nodeIter.nextRight();
-                        compareVal = nodeIter.nodePointer.compareTo(compareNode);
-                    } else {
-                        //value not in tree
-                        inTree = false;
-                    }
+        BinaryNode<T> returnNode=null;
+        int compareVal=compareNode.compareTo(nodeIter.nodePointer);
+        while(!found) {
+            if (compareVal < 0) {
+                if (nodeIter.hasLeft()) {
+                    nodeIter.nextLeft();
+                } else {
+                    throw new NoSuchElementException();
                 }
-            }
-            if (inTree) {
-                return nodeIter.nodePointer;
+            } else if (compareVal > 0) {
+                if (nodeIter.hasRight()) {
+                    nodeIter.nextRight();
+                } else {
+                    throw new NoSuchElementException();
+                }
             } else {
-                //throw a no such element
-                throw new NoSuchElementException();
+                returnNode = nodeIter.nodePointer;
+                found=true;
             }
-        }catch(NoSuchElementException nse){
-            System.err.println("Element not found in tree");
-            return null;
+            compareVal=compareNode.compareTo(nodeIter.nodePointer);
         }
+            System.out.println("Returning data of "+returnNode.nodeData().toString());
+            return  returnNode;
     }
 
     public BinaryNode<T> removeSkewLeft(T data, BinaryNode treeRoot){
         BinaryNode<T> compareNode=new BinaryNode(data);
-        Iterator<T> nodeIter=new Iterator(this.rootNode);
+        Iterator<T> nodeIter=new Iterator(treeRoot);
         BinaryNode<T> electedRoot;
+        BinaryNode<T> leftNode;
+        BinaryNode<T> rightNode;
 
+        //Also base case may never be hit because of hasLeft hasRight
         if(treeRoot == null)
         {
             return treeRoot;
+
         }
 
-        int compareVal=rootNode.compareTo(compareNode);
+        int compareVal=compareNode.compareTo(treeRoot);
 
         if(compareVal < 0)
         {
             if(nodeIter.hasLeft())
             {
-                nodeIter.nextLeft();
-                removeSkewLeft(data, nodeIter.nodePointer);
+                leftNode=treeRoot.getLeftChild();
+                electedRoot=removeSkewLeft(data, leftNode);
+                treeRoot.setLeft(electedRoot);
             }
             else{
                 return treeRoot;
@@ -320,8 +313,9 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
         else if(compareVal > 0)
         {
             if(nodeIter.hasLeft()){
-                nodeIter.nextRight();
-                removeSkewLeft(data, nodeIter.nodePointer);
+                rightNode=treeRoot.getRightChild();
+                electedRoot=removeSkewLeft(data, rightNode);
+                treeRoot.setRight(electedRoot);
             }
             else
             {
@@ -329,7 +323,7 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
             }
 
         }
-        else if(!(nodeIter.hasNext()) && !(nodeIter.hasRight()))
+        else if(nodeIter.hasLeft() && nodeIter.hasRight())
         {
             //Node found and has two children
 
@@ -337,42 +331,60 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
             treeRoot.setData(electedRoot.data);
             BinaryNode<T> replacementTree=removeSkewLeft(electedRoot.data, treeRoot.right );
             treeRoot.setRight(replacementTree);
+            System.out.println("Tree root "+treeRoot.nodeData().toString());
 
         }
         else
         {
-            if(!(nodeIter.hasLeft()))
+            boolean hasRight=nodeIter.hasRight();
+            boolean hasLeft=nodeIter.hasLeft();
+            if(nodeIter.hasLeft())
             {
                 //set the current node to the left element
-                treeRoot.set(compareNode);
+                treeRoot=treeRoot.getLeftChild();
+                System.out.println("Tree root: "+treeRoot.nodeData().toString());
             }
             else
             {
                 //set the current node to right element
-                treeRoot.set(compareNode);
+                if(nodeIter.hasRight()) {
+                    treeRoot = treeRoot.getRightChild();
+                }
+                else
+                {
+                    treeRoot=null;
+                }
             }
         }
         return treeRoot;
     }
 
+    /*
+    *Returns the root node of the new tree with the element removed
+     */
     public BinaryNode<T> removeSkewRight(T data, BinaryNode<T> treeRoot){
         BinaryNode<T> compareNode=new BinaryNode(data);
-        Iterator<T> nodeIter=new Iterator(this.rootNode);
+        Iterator<T> nodeIter=new Iterator(treeRoot);
         BinaryNode<T> electedRoot;
+        BinaryNode<T> leftNode;
+        BinaryNode<T> rightNode;
 
+        //Also base case may never be hit because of hasLeft hasRight
         if(treeRoot == null)
         {
             return treeRoot;
+
         }
 
-        int compareVal=rootNode.compareTo(compareNode);
+        int compareVal=compareNode.compareTo(treeRoot);
 
         if(compareVal < 0)
         {
             if(nodeIter.hasLeft())
             {
-                nodeIter.nextLeft();
-                removeSkewLeft(data, nodeIter.nodePointer);
+                leftNode=treeRoot.getLeftChild();
+                electedRoot=removeSkewRight(data, leftNode);
+                treeRoot.setLeft(electedRoot);
             }
             else{
                 return treeRoot;
@@ -381,8 +393,9 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
         else if(compareVal > 0)
         {
             if(nodeIter.hasLeft()){
-                nodeIter.nextRight();
-                removeSkewLeft(data, nodeIter.nodePointer);
+                rightNode=treeRoot.getRightChild();
+                electedRoot=removeSkewRight(data, rightNode);
+                treeRoot.setRight(electedRoot);
             }
             else
             {
@@ -390,27 +403,36 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
             }
 
         }
-        else if(!(nodeIter.hasNext()) && !(nodeIter.hasRight()))
+        else if(nodeIter.hasLeft() && nodeIter.hasRight())
         {
             //Node found and has two children
 
             electedRoot=findMax(treeRoot.left);
             treeRoot.setData(electedRoot.data);
-            BinaryNode<T> replacementTree=removeSkewLeft(electedRoot.data, treeRoot.left );
+            BinaryNode<T> replacementTree=removeSkewRight(electedRoot.data, treeRoot.left );
             treeRoot.setLeft(replacementTree);
+            System.out.println("Tree root "+treeRoot.nodeData().toString());
 
         }
         else
         {
-            if(!(nodeIter.hasLeft()))
+            boolean hasRight=nodeIter.hasRight();
+            boolean hasLeft=nodeIter.hasLeft();
+            if(nodeIter.hasLeft())
             {
                 //set the current node to the left element
-                treeRoot.set(compareNode);
+                treeRoot=treeRoot.getLeftChild();
             }
             else
             {
                 //set the current node to right element
-                treeRoot.set(compareNode);
+                if(nodeIter.hasRight()) {
+                    treeRoot = treeRoot.getRightChild();
+                }
+                else
+                {
+                    treeRoot=null;
+                }
             }
         }
         return treeRoot;
