@@ -3,6 +3,14 @@ import java.util.*;
 public  class BinarySearchTreeADT<T extends Comparable<T>>
 {
 
+    BinaryNode<T> rootNode;
+    Iterator<T> nodeIter;
+
+    public BinarySearchTreeADT(BinaryNode<T> rt){
+        this.rootNode=rt;
+        this.nodeIter=new Iterator(rootNode);
+    }
+
     public static class BinaryNode<T extends Comparable<T>>
     {
         public BinaryNode<T> left;
@@ -50,6 +58,10 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
             }
         }
 
+        public void setData(T dat){
+            this.data=dat;
+        }
+
         public void setLeft(BinaryNode<T> lt)
         {
             this.left=lt;
@@ -60,11 +72,56 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
             this.right=rt;
         }
 
+        public void set(BinaryNode t){
+            t.setRight(this.right);
+            t.setLeft(this.left);
+        }
+
         public int compareTo(BinaryNode<T> other )
         {
             return this.data.compareTo(other.data);
         }
 
+    }
+
+    //can not access subclasses from external classes
+    public String inOrderDriver(){
+        String result=inOrder(this.rootNode);
+        return result;
+    }
+
+    public String preOrderDriver(){
+        String result=preOrder(this.rootNode);
+        return result;
+    }
+
+    public String postOrderDriver(){
+        String result=postOrder(this.rootNode);
+        return result;
+    }
+
+    public BinaryNode<T> getRootNode() {
+        return this.rootNode;
+    }
+
+    public BinaryNode<T> getNextLeft() {
+        nodeIter.nextLeft();
+        BinaryNode<T> nextLeft=nodeIter.nodePointer;
+        T nodePointerData=nextLeft.data;
+        System.out.println(nodePointerData.toString());
+        return nodeIter.nodePointer;
+    }
+
+    public BinaryNode<T> getNextRight(){
+        nodeIter.nextRight();
+        BinaryNode<T> nextRight=nodeIter.nodePointer;
+        T nodePointerData=nextRight.data;
+        System.out.println(nodePointerData.toString());
+        return nodeIter.nodePointer;
+    }
+
+    public void resetIter(){
+        nodeIter.setNodePointer(rootNode);
     }
 
     public BinaryNode<T> findMin(BinaryNode<T> root){
@@ -95,16 +152,27 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
 
     public String inOrder(BinaryNode<T> root)
     {
-
         System.out.println("Entering in order");
         Iterator<T> traversalIter=new Iterator(root);
+        BinaryNode<T> leftNode;
+        BinaryNode<T> rightNode;
         String result="";
-        System.out.println("Problems at Left");
-        traversalIter.nextLeft();
-        result=result+traversalIter.nodePointer.data.toString()+" ,";
-        System.out.println("Problem at Right");
-        traversalIter.nextRight();
-        System.out.println("Leaving inorder with"+result);
+        if(traversalIter.hasLeft()){
+            leftNode=root.getLeftChild();
+            System.out.printf("Left node data: "+leftNode.nodeData().toString()+"\n");
+            result=result+inOrder(leftNode);
+        }
+        if(root != null){
+            System.out.println("Root data:"+ root.nodeData().toString());
+            result=result+root.nodeData().toString()+" ";
+        }
+        if(traversalIter.hasRight())
+        {
+            rightNode=root.getRightChild();
+            System.out.printf("Right node data: "+rightNode.toString().toString()+"\n");
+            result=result+inOrder(root.getRightChild());
+        }
+        System.out.println("Leaving inorder with "+result);
         return result;
     }
 
@@ -113,12 +181,23 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
         System.out.println("Entering preOrder");
         Iterator<T> traversalIter=new Iterator(root);
         String result = "";
-        result=result+traversalIter.nodePointer.data.toString() + " ,";
-        System.out.println("Problem at left");
-        traversalIter.nextLeft();
-        System.out.println("Problem at right");
-        traversalIter.nextRight();
-        System.out.println("Leaving preOrder with"+result);
+        BinaryNode<T> leftNode;
+        BinaryNode<T> rightNode;
+        if(root != null){
+            System.out.printf("Root data "+root.nodeData().toString());
+            result=result+root.nodeData().toString()+" ";
+        }
+        if(traversalIter.hasLeft()){
+            leftNode=root.getLeftChild();
+            System.out.println("Left node data: "+leftNode.nodeData().toString());
+            result=result+preOrder(leftNode);
+        }
+        if(traversalIter.hasRight()){
+            rightNode=root.getRightChild();
+            System.out.println("Right node Data: "+rightNode.nodeData().toString());
+            result=result+preOrder(root.getRightChild());
+        }
+        System.out.println("Leaving preOrder with "+result);
         return result;
     }
 
@@ -126,14 +205,215 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
         System.out.println("Entering postOrder");
         Iterator<T> traversalIter=new Iterator(root);
         String result="";
-        System.out.println("Problem at left");
-        traversalIter.nextLeft();
-        System.out.println("Problem at right");
-        traversalIter.nextRight();
-        result=result+traversalIter.nodePointer.data.toString()+" ,";
-        System.out.println("Leaving postOrder with"+result);
+        BinaryNode<T> leftNode;
+        BinaryNode<T> rightNode;
+        if(traversalIter.hasLeft()){
+            leftNode=root.getLeftChild();
+            System.out.println("Left node data: "+leftNode.nodeData().toString());
+            result=result+postOrder(root.getLeftChild());
+        }
+        if(traversalIter.hasRight()){
+            rightNode=root.getRightChild();
+            System.out.println("Right node data: "+rightNode.nodeData().toString());
+            result=result+postOrder(root.getRightChild());
+        }
+        if(root != null)
+        {
+            System.out.println("Data: "+root.nodeData().toString());
+            result=result+root.nodeData().toString()+" ";
+        }
+        System.out.println("Leaving postOrder with "+result);
         return result;
+    }
 
+    /**
+     * @Cited: Data Structure and Algorithm Analysis in Java 3rd Edition
+     * @Author: Mark Allen Weiss
+     *
+     */
+
+    public BinaryNode<T> insert(T data, BinaryNode<T> insertNode)
+    {
+        BinaryNode<T> compareNode=new BinaryNode(data);
+        if(insertNode == null)
+        {
+            return new BinaryNode<T>(null, null, data);
+        }
+
+        int compareVal=compareNode.compareTo(insertNode);
+        if(compareVal <0){
+            BinaryNode<T> leftNode=insert(data, insertNode.getLeftChild());
+            insertNode.setLeft(leftNode);
+        }
+        else if(compareVal >0){
+            BinaryNode<T> rightNode=insert(data, insertNode.getRightChild());
+            insertNode.setRight(rightNode);
+        }
+        else {
+            //Duplicate do not return
+            return null;
+        }
+        //Return the root to the new tree
+        return insertNode;
+    }
+
+    public BinaryNode<T> find(T data){
+        boolean inTree=true;
+        BinaryNode<T> compareNode=new BinaryNode(data);
+        Iterator nodeIter=new Iterator(this.rootNode);
+        int compareVal=nodeIter.nodePointer.compareTo(compareNode);
+        try {
+            while (compareVal != 0 && inTree) {
+                if (compareVal < 0) {
+                    if (nodeIter.hasLeft()) {
+                        nodeIter.nextLeft();
+                        compareVal = nodeIter.nodePointer.compareTo(compareNode);
+                    } else {
+                        //value not in tree
+                        inTree = false;
+                    }
+                } else if (compareVal > 0) {
+                    if (nodeIter.hasRight()) {
+                        nodeIter.nextRight();
+                        compareVal = nodeIter.nodePointer.compareTo(compareNode);
+                    } else {
+                        //value not in tree
+                        inTree = false;
+                    }
+                }
+            }
+            if (inTree) {
+                return nodeIter.nodePointer;
+            } else {
+                //throw a no such element
+                throw new NoSuchElementException();
+            }
+        }catch(NoSuchElementException nse){
+            System.err.println("Element not found in tree");
+            return null;
+        }
+    }
+
+    public BinaryNode<T> removeSkewLeft(T data, BinaryNode treeRoot){
+        BinaryNode<T> compareNode=new BinaryNode(data);
+        Iterator<T> nodeIter=new Iterator(this.rootNode);
+        BinaryNode<T> electedRoot;
+
+        if(treeRoot == null)
+        {
+            return treeRoot;
+        }
+
+        int compareVal=rootNode.compareTo(compareNode);
+
+        if(compareVal < 0)
+        {
+            if(nodeIter.hasLeft())
+            {
+                nodeIter.nextLeft();
+                removeSkewLeft(data, nodeIter.nodePointer);
+            }
+            else{
+                return treeRoot;
+            }
+        }
+        else if(compareVal > 0)
+        {
+            if(nodeIter.hasLeft()){
+                nodeIter.nextRight();
+                removeSkewLeft(data, nodeIter.nodePointer);
+            }
+            else
+            {
+                return treeRoot;
+            }
+
+        }
+        else if(!(nodeIter.hasNext()) && !(nodeIter.hasRight()))
+        {
+            //Node found and has two children
+
+            electedRoot=findMin(treeRoot.right);
+            treeRoot.setData(electedRoot.data);
+            BinaryNode<T> replacementTree=removeSkewLeft(electedRoot.data, treeRoot.right );
+            treeRoot.setRight(replacementTree);
+
+        }
+        else
+        {
+            if(!(nodeIter.hasLeft()))
+            {
+                //set the current node to the left element
+                treeRoot.set(compareNode);
+            }
+            else
+            {
+                //set the current node to right element
+                treeRoot.set(compareNode);
+            }
+        }
+        return treeRoot;
+    }
+
+    public BinaryNode<T> removeSkewRight(T data, BinaryNode<T> treeRoot){
+        BinaryNode<T> compareNode=new BinaryNode(data);
+        Iterator<T> nodeIter=new Iterator(this.rootNode);
+        BinaryNode<T> electedRoot;
+
+        if(treeRoot == null)
+        {
+            return treeRoot;
+        }
+
+        int compareVal=rootNode.compareTo(compareNode);
+
+        if(compareVal < 0)
+        {
+            if(nodeIter.hasLeft())
+            {
+                nodeIter.nextLeft();
+                removeSkewLeft(data, nodeIter.nodePointer);
+            }
+            else{
+                return treeRoot;
+            }
+        }
+        else if(compareVal > 0)
+        {
+            if(nodeIter.hasLeft()){
+                nodeIter.nextRight();
+                removeSkewLeft(data, nodeIter.nodePointer);
+            }
+            else
+            {
+                return treeRoot;
+            }
+
+        }
+        else if(!(nodeIter.hasNext()) && !(nodeIter.hasRight()))
+        {
+            //Node found and has two children
+
+            electedRoot=findMax(treeRoot.left);
+            treeRoot.setData(electedRoot.data);
+            BinaryNode<T> replacementTree=removeSkewLeft(electedRoot.data, treeRoot.left );
+            treeRoot.setLeft(replacementTree);
+
+        }
+        else
+        {
+            if(!(nodeIter.hasLeft()))
+            {
+                //set the current node to the left element
+                treeRoot.set(compareNode);
+            }
+            else
+            {
+                //set the current node to right element
+                treeRoot.set(compareNode);
+            }
+        }
+        return treeRoot;
     }
 
 
@@ -145,10 +425,16 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
         private BinarySearchTreeADT.BinaryNode<T> nextLeft;
         private BinarySearchTreeADT.BinaryNode<T> nextRight;
         public  BinarySearchTreeADT.BinaryNode<T> nodePointer;
+        public  BinarySearchTreeADT.BinaryNode<T> prevPointer;
 
         public Iterator(BinaryNode<T> root)
         {
             nodePointer=root;
+            prevPointer=null;
+        }
+
+        public void setNodePointer(BinaryNode<T> node){
+            this.nodePointer=node;
         }
 
         public boolean hasNext()
@@ -183,7 +469,6 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
 
         public boolean hasLeft()
         {
-            System.out.println("Problem wih has left");
             boolean hasLeft=false;
             BinaryNode<T> lt=this.nodePointer.getLeftChild();
             if(lt != null){
@@ -194,7 +479,6 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
 
         public boolean hasRight()
         {
-            System.out.println("Problem with has right");
             boolean hasRight=false;
             BinaryNode<T> rt=this.nodePointer.getRightChild();
             if(rt != null){
@@ -211,16 +495,15 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
         public void nextLeft(){
             try
             {
-                System.out.println("test has next");
                 if(!hasLeft())
                 {
                     throw new java.util.NoSuchElementException();
                 }
-                System.out.println("setting nextLeft");
                 if(this.nextLeft == null)
                 {
                     setNext();
                 }
+                this.prevPointer=nodePointer;
                 this.nodePointer=nextLeft;
                 clearNext();
             }
@@ -234,16 +517,15 @@ public  class BinarySearchTreeADT<T extends Comparable<T>>
         {
             try
             {
-                System.out.println("test has next");
                 if(!hasRight())
                 {
                     throw new java.util.NoSuchElementException();
                 }
-                System.out.println("setting nextRight");
                 if(this.nextRight == null)
                 {
                     setNext();
                 }
+                this.prevPointer=nodePointer;
                 this.nodePointer=nextRight;
                 clearNext();
             }
